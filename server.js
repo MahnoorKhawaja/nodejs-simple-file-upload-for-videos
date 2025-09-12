@@ -19,8 +19,12 @@ app.set('views', path.join(__dirname, 'views'));
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
+// ✅ Create BlobServiceClient globally once
+const blobServiceClient = BlobServiceClient.fromConnectionString(process.env.AZURE_STORAGE_CONNECTION_STRING);
+const containerClient = blobServiceClient.getContainerClient(process.env.VIDEO_CONTAINER_NAME);
+
 // Azure Upload Endpoint
-app.post('/upload', upload.single('file'), async(req, res) => {
+app.post(['/upload', '/videos/upload'], upload.single('file'), async(req, res) => {
     console.log('📥 Upload route called!');
 
     if (!req.file) {
@@ -29,9 +33,6 @@ app.post('/upload', upload.single('file'), async(req, res) => {
     }
 
     try {
-        const blobServiceClient = BlobServiceClient.fromConnectionString(process.env.AZURE_STORAGE_CONNECTION_STRING);
-        const containerClient = blobServiceClient.getContainerClient(process.env.VIDEO_CONTAINER_NAME);
-
         const blobName = `${Date.now()}-${req.file.originalname}`;
         const blockBlobClient = containerClient.getBlockBlobClient(blobName);
 
@@ -53,9 +54,9 @@ app.post('/upload', upload.single('file'), async(req, res) => {
 app.get('/', (req, res) => {
     res.render('index', { message: null, blobUrl: null });
 });
+
 // List all videos
 app.get('/videos', async(req, res) => {
-    const containerClient = blobServiceClient.getContainerClient(process.env.VIDEO_CONTAINER_NAME);
     let videoUrls = [];
     for await (const blob of containerClient.listBlobsFlat()) {
         videoUrls.push(containerClient.getBlockBlobClient(blob.name).url);
