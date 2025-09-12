@@ -30,7 +30,7 @@ app.post('/upload', upload.single('file'), async(req, res) => {
 
     try {
         const blobServiceClient = BlobServiceClient.fromConnectionString(process.env.AZURE_STORAGE_CONNECTION_STRING);
-        const containerClient = blobServiceClient.getContainerClient(process.env.AZURE_CONTAINER_NAME);
+        const containerClient = blobServiceClient.getContainerClient(process.env.VIDEO_CONTAINER_NAME);
 
         const blobName = `${Date.now()}-${req.file.originalname}`;
         const blockBlobClient = containerClient.getBlockBlobClient(blobName);
@@ -52,6 +52,15 @@ app.post('/upload', upload.single('file'), async(req, res) => {
 // Render Upload Page
 app.get('/', (req, res) => {
     res.render('index', { message: null, blobUrl: null });
+});
+// List all videos
+app.get('/videos', async(req, res) => {
+    const containerClient = blobServiceClient.getContainerClient(process.env.VIDEO_CONTAINER_NAME);
+    let videoUrls = [];
+    for await (const blob of containerClient.listBlobsFlat()) {
+        videoUrls.push(containerClient.getBlockBlobClient(blob.name).url);
+    }
+    res.json(videoUrls);
 });
 
 // Start server
