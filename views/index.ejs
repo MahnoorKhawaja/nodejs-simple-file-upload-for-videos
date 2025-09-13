@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Video Upload</title>
+</head>
+
+<body>
+    <h1>Upload a Video</h1>
+    <form action="/videos/upload" method="POST" enctype="multipart/form-data">
+        <input type="file" name="file" />
+        <button type="submit">Upload</button>
+    </form>
+
+    <% if (message) { %>
+        <p>
+            <%= message %>
+        </p>
+        <% if (blobUrl) { %>
+            <p>Video URL:
+                <a href="<%= blobUrl %>" target="_blank">
+                    <%= blobUrl %>
+                </a>
+            </p>
+            <% } %>
+                <% } %>
+</body>
+
+</html>
