@@ -50,12 +50,17 @@ app.post(['/upload', '/videos/upload'], upload.single('file'), async(req, res) =
     }
 });
 
-// Render Upload Page
+// ✅ Render Upload Page
 app.get('/', (req, res) => {
     res.render('index', { message: null, blobUrl: null });
 });
 
-// List all videos
+// ✅ Health check endpoint (important for App Gateway)
+app.get('/health', (req, res) => {
+    res.status(200).send('OK');
+});
+
+// ✅ List all videos
 app.get('/videos', async(req, res) => {
     let videoUrls = [];
     for await (const blob of containerClient.listBlobsFlat()) {
